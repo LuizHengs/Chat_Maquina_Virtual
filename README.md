@@ -3,5 +3,6 @@ Primeiro Projeto para a disciplina de Redes para Computadores da UFPB, período 
 
 ## PROGRESSO
 
--[ ] Criar Interface
--[x] Comunicação Local
+- [ ] Criar Interface
+- [x] Comunicação Local TCP
+- [ ] Comunicação Local UDP
