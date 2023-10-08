@@ -26,7 +26,7 @@ def start_connection(ip_address):
 
     print("Tentando se conectar ao servidor...")
     checking_ip_address(ip_address)
-    connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #socket.SOCK_STREAM eh para conexao TCP. Para realizar UDP, use socket.SOCK_DGRAM
+    connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) #socket.SOCK_STREAM eh para conexao UDP. Para realizar UDP, use socket.SOCK_DGRAM
 
     try:
         destino = (ip_address,SERVER_POT)
@@ -38,7 +38,7 @@ def start_connection(ip_address):
     return connection
 
 def close_connection(connection):
-    print("Terminando a conexao TCP...")
+    print("Terminando a conexao UDP...")
     connection.close()
 
 def conversation(connection):
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     try:
         conexao.close()
     except ConnectionError as erro:
-        print("A conexao TCP chegou ao fim")
+        print("A conexao UDP chegou ao fim")
 
 
 

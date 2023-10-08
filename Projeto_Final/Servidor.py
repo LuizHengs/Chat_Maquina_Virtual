@@ -7,7 +7,7 @@ BUFFER = 1024
 
 def bind_to_the_server():
 
-    connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     socket_server = (SERVER_IP, SERVER_POT)
     connection.bind(socket_server)
     connection.listen(1)
