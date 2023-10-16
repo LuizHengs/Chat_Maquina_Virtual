@@ -52,7 +52,7 @@ def conversation(connection):
             if mensagem == "sair":
                 break
 
-        rec_mensagem = connection.recv(BUFFER).decode("ascii")
+        rec_mensagem = connection.recv(BUFFER).decode("utf8")
 
         if rec_mensagem != "":
             print(f"Servidor: {rec_mensagem}")
