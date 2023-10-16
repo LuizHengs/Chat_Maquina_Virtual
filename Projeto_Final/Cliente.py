@@ -63,7 +63,7 @@ def conversation(connection):
     close_connection(connection)
 
 if __name__ == '__main__':
-    print("Bem vindo ao chat com comunicaçao socket!")
+    print("Bem vindo ao chat com comunicaçao socket TCP!")
 
     conexao = connecting()
     conversation(conexao)
