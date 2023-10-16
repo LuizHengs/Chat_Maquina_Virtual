@@ -29,7 +29,7 @@ def listening (connection, ip_cliente):
     print("Começando o chat. Esperando por uma mensagem...")
 
     while True:
-        rec_mensagem = connection.recv(BUFFER).decode("ascii")
+        rec_mensagem = connection.recv(BUFFER).decode("utf8")
 
         if rec_mensagem != "":
             print(f"\nCliente {ip_cliente[0]}: {rec_mensagem}")
