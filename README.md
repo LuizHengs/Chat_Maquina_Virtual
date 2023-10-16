@@ -5,4 +5,4 @@ Primeiro Projeto para a disciplina de Redes para Computadores da UFPB, período 
 
 - [ ] Criar Interface
 - [x] Comunicação Local TCP
-- [ ] Comunicação Local UDP
+- [x] Comunicação Local UDP
