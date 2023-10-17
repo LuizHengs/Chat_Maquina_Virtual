@@ -24,7 +24,7 @@ def listening (connection):
     print("Começando o chat. Esperando por uma mensagem...")
 
     while True:
-        rec_mensagem, ip_cliente = connection.recvfrom(BUFFER)
+        rec_mensagem, clienteAddress = connection.recvfrom(BUFFER)
 
         if rec_mensagem != "":
             print(f"\nCliente: {rec_mensagem.decode()}")
@@ -34,7 +34,7 @@ def listening (connection):
         sending_mensagem = input("Servidor: ")
 
         if sending_mensagem != "":
-            connection.sendto(sending_mensagem.encode(), ip_cliente)
+            connection.sendto(sending_mensagem.encode(), clienteAddress)
             if sending_mensagem == "sair":
                 break
 
