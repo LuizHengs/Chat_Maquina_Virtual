@@ -1,57 +1,59 @@
 import socket
-import sys
+import threading
+import customtkinter as ctk
 
-SERVER_IP = ''
-SERVER_POT = 8000
+SERVER_PORT = 8000
 BUFFER = 1024
 
-def bind_to_the_server():
+ctk.set_appearance_mode("System")
+ctk.set_default_color_theme("blue")
 
-    connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    socket_server = (SERVER_IP, SERVER_POT)
-    connection.bind(socket_server)
-    connection.listen(1)
+class MyFrame(ctk.CTkFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
 
-    return connection
+class App(ctk.CTk):
+    def __init__(self):
+        super().__init__()
 
-def client_confirmation(connection):
+        self.geometry("1280x720")
+        self.textbox = ctk.CTkTextbox(master=self, width=480, height=480, corner_radius=0)
+        self.textbox.pack()
 
-    connection, ip_cliente = connection.accept()
-    print(f"O cliente com endereço de IP f{ip_cliente[0]} aceitou.")
-    return connection, ip_cliente
+        self.start_server()
 
-def close_connection(connection):
+    def start_server(self):
+        self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.server_socket.bind(('0.0.0.0', SERVER_PORT))
+        self.server_socket.listen(1)
+        self.textbox.insert("end", "Waiting for a client to connect...\n")
 
-    print("Terminando a conexao e saindo do programa...")
-    connection.close()
+        self.accept_client()
 
-def listening (connection, ip_cliente):
-    print("Começando o chat. Esperando por uma mensagem...")
+    def accept_client(self):
+        while True:
+            client_socket, client_address = self.server_socket.accept()
+            self.textbox.insert("end", f"Client {client_address[0]} connected.\n")
+            self.handle_client(client_socket)
 
-    while True:
-        rec_mensagem = connection.recv(BUFFER).decode("utf8")
-
-        if rec_mensagem != "":
-            print(f"\nCliente {ip_cliente[0]}: {rec_mensagem}")
-            if rec_mensagem == "sair":
-                print("O lado do cliente terminou a conexao. Digite 'sair' para terminar a conexao")
-
-        sending_mensagem = input("Servidor: ")
-
-        if sending_mensagem != "":
-            connection.send(bytes(sending_mensagem, "utf8"))
-            if sending_mensagem == "sair":
+    def handle_client(self, client_socket):
+        while True:
+            rec_message = client_socket.recv(BUFFER).decode("utf8")
+            print(f'Client: {rec_message}')
+            if not rec_message:
                 break
 
-    print("Saindo...")
-    close_connection(connection)
+            self.textbox.insert("end", f'Client: {rec_message}\n')
 
+            if rec_message == "sair":
+                self.textbox.insert("end", "Client terminated the connection.\n")
+                break
 
+            response = input("Server: ")
+            client_socket.send(bytes(response, "utf8"))
+
+        client_socket.close()
 
 if __name__ == '__main__':
-    conexao_atual = bind_to_the_server()
-    conexao_aceita, ip_cliente = client_confirmation(conexao_atual)
-    listening(conexao_aceita, ip_cliente)
-
-    sys.exit()
-
+    app = App()
+    app.mainloop()

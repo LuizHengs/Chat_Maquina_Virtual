@@ -1,78 +1,110 @@
 import socket
 import sys
+import threading
+
+import customtkinter as ctk
 
 SERVER_POT = 8000
 BUFFER = 1024
+ctk.set_appearance_mode("System")  # Modes: system (default), light, dark
+ctk.set_default_color_theme("blue")  # Themes: blue (default), dark-blue, green
 
-def connecting():
+class MyFrame(ctk.CTkFrame):
+    def __init__(self, master, **kwargs):
+        super().__init__(master, **kwargs)
 
-    value = input("Coloque o endereço de IP para começar a comunicaçao: ")
-    confirmation = input(f"\nO endereço de destino e {value}. E isso mesmo?\n ('s' ou 'n'): ")
+class App(ctk.CTk):
+    def __init__(self):
+        super().__init__()
 
-    confirmation = (False if confirmation == 'n' else True)
-    if confirmation is False:
-        print("Saindo...")
+        self.geometry("1216x684")
+        self.textbox = ctk.CTkTextbox(master=self, width=1216, height=657, corner_radius=25, font=('Helvetica bold',20))
+        self.textbox.pack()
+
+        widget_frame = ctk.CTkFrame(self)
+        widget_frame.pack(side="top", anchor="n")
+
+        self.entryText = ctk.CTkEntry(widget_frame, placeholder_text="Digite sua mensagem", width = 500, font=('Helvetica bold',14))
+        self.entryText.pack(side="left")  
+
+        self.submitButton = ctk.CTkButton(widget_frame, text="Submit", command=self.submit)
+        self.submitButton.pack(side="left")  
+
+        self.connection = self.connecting()
+
+    def submit(self):
+        text = self.entryText.get()
+        
+        self.conversation(text)
+        
+    def connecting(self):
+        # value = input("Coloque o endereço de IP para começar a comunicação: ")
+        # confirmation = input(f"\nO endereço de destino é {value}. É isso mesmo?\n ('s' ou 'n'): ")
+        value = "127.0.0.1"
+        # confirmation = (False if confirmation == 'n' else True)
+        # if confirmation is False:
+        #     print("Saindo...")
+        #     sys.exit()
+
+        return self.start_connection(value)
+    
+    def checking_ip_address(self, ip_address):
+        print("Checkando IP")
+        if len(ip_address) == 9 and ip_address is not None:
+            return True
+        print("Terminando o programa... cheque se o endereço de IP foi corrigido!")
         sys.exit()
+        
+    def start_connection(self, ip_address):
+        print("Tentando se conectar ao servidor...")
+        self.checking_ip_address(ip_address)
+        connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    return start_connection(value)
+        try:
+            destino = (ip_address, SERVER_POT)
+            connection.connect(destino)
+        except ConnectionError as erro:
+            print("Conexão recusada. Tipo do erro:", type(erro))
 
-def checking_ip_address (ip_address):
-    if len(ip_address) == 9 and ip_address is not None:
-        return True
-    print("Terminando o programa... cheque se o endereço de IP foi corrigido!")
-    sys.exit()
+        return connection
 
-def start_connection(ip_address):
+    def close_connection(self):
+        print("Terminando a conexão TCP...")
+        self.connection.close()
 
-    print("Tentando se conectar ao servidor...")
-    checking_ip_address(ip_address)
-    connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #socket.SOCK_STREAM eh para conexao TCP. Para realizar UDP, use socket.SOCK_DGRAM
+    def start_listening(self):
+        while True:
+            try:
+                rec_mensagem = self.connection.recv(BUFFER).decode("utf8")
+                if rec_mensagem:
+                    print(f"Servidor: {rec_mensagem}")
+                    self.textbox.insert("end", f'Servidor: {rec_mensagem}\n')
 
-    try:
-        destino = (ip_address,SERVER_POT)
-        connection.connect(destino)
-    except ConnectionError as erro:
-        print("Conexao recusada. "
-              f"Tipo do erro: {type(erro)}")
-
-    return connection
-
-def close_connection(connection):
-    print("Terminando a conexao TCP...")
-    connection.close()
-
-def conversation(connection):
-    print("Começando o chat! Para sair, escreva: 'sair'")
-
-    while True:
-        mensagem = input("\nVoce: ")
-
-        if mensagem != "":
-            connection.send(bytes(mensagem, "utf8"))
-            if mensagem == "sair":
+                    if rec_mensagem == "sair":
+                        print("O lado do servidor terminou a conexão. Informe 'sair' para terminar a conexão")
+                        self.close_connection()
+                        break
+            except ConnectionError as erro:
+                print("Erro de conexão:", erro)
+                self.close_connection()
                 break
 
-        rec_mensagem = connection.recv(BUFFER).decode("utf8")
+    def conversation(self, text): 
+        self.entryText.delete(0, ctk.END)
+        if text != "":
+            self.connection.send(bytes(text, "utf8"))
+            self.textbox.insert("end", f'Você: {text}\n')
+            if text == "sair":
+                self.close_connection()
+                return
 
-        if rec_mensagem != "":
-            print(f"Servidor: {rec_mensagem}")
-            if rec_mensagem == "sair":
-                print("O lado do servidor terminou a conexao. Informe 'sair' para terminar a conexao")
-
-    print("Saindo...")
-    close_connection(connection)
+    def submit(self):
+        text = self.entryText.get()
+        self.conversation(text)
 
 if __name__ == '__main__':
-    print("Bem vindo ao chat com comunicaçao socket TCP!")
-
-    conexao = connecting()
-    conversation(conexao)
-
-    try:
-        conexao.close()
-    except ConnectionError as erro:
-        print("A conexao TCP chegou ao fim")
-
-
-
-
+    app = App()
+    listening_thread = threading.Thread(target=app.start_listening)
+    listening_thread.daemon = True
+    listening_thread.start()
+    app.mainloop()
