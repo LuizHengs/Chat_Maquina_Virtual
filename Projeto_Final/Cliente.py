@@ -18,6 +18,7 @@ class App(ctk.CTk):
         super().__init__()
 
         self.geometry("1216x684")
+        self.title("Client")
         self.textbox = ctk.CTkTextbox(master=self, width=1216, height=657, corner_radius=25, font=('Helvetica bold',20))
         self.textbox.pack()
 
@@ -69,7 +70,7 @@ class App(ctk.CTk):
         return connection
 
     def close_connection(self):
-        print("Terminando a conexão TCP...")
+        print("Terminando a conexão...")
         self.connection.close()
 
     def start_listening(self):
@@ -77,15 +78,15 @@ class App(ctk.CTk):
             try:
                 rec_mensagem = self.connection.recv(BUFFER).decode("utf8")
                 if rec_mensagem:
-                    print(f"Servidor: {rec_mensagem}")
                     self.textbox.insert("end", f'Servidor: {rec_mensagem}\n')
 
                     if rec_mensagem == "sair":
-                        print("O lado do servidor terminou a conexão. Informe 'sair' para terminar a conexão")
+                        self.textbox.insert("end", f"O lado do servidor terminou a conexão. Informe 'sair' para terminar a conexão\n")
                         self.close_connection()
                         break
             except ConnectionError as erro:
-                print("Erro de conexão:", erro)
+                print(erro)
+                self.textbox.insert("end", f"Erro de conexão\n")
                 self.close_connection()
                 break
 
